@@ -57,6 +57,18 @@ Gateway menerima request berformat Anthropic Messages dari Claude Code dan OpenA
 
 ## 🎬 Demo & Screenshot
 
+### 🎥 Video Demo: Terminal Session
+
+![Demo Terminal AI Gateway](assets/demo-terminal.gif)
+
+*Animasi GIF: Server `aig-server` dijalankan, provider terdeteksi, lalu `aig-claude` meluncurkan Claude Code CLI yang membuat aplikasi FastAPI CRUD melalui NVIDIA NIM.*
+
+### 🎥 Video Demo: Admin Panel
+
+![Demo Admin Panel AI Gateway](assets/demo-admin.gif)
+
+*Animasi GIF: Panel admin web menampilkan provider yang aktif satu per satu, navigasi antar section, dan status real-time.*
+
 ### Demo Gateway — Server & Claude Code
 
 ![Demo AI Gateway](assets/demo-gateway.jpeg)
