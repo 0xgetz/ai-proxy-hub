@@ -12,6 +12,7 @@
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.136+-green?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
 [![License](https://img.shields.io/badge/License-MIT-yellow)](LICENSE)
 [![Version](https://img.shields.io/badge/Version-2.4.0-orange)]()
+[![Saweria](https://img.shields.io/badge/Donasi-Saweria-FF6B35?logo=saweria&logoColor=white)](https://saweria.co/0xgetz)
 
 </div>
 
@@ -809,6 +810,26 @@ Ya, AI Gateway mendukung SSE (Server-Sent Events) streaming penuh dengan recover
 
 Ya, setiap provider mendukung konfigurasi proxy HTTP dan SOCKS5 secara independen. Contoh: `NVIDIA_NIM_PROXY="http://user:pass@host:port"` atau `OPENROUTER_PROXY="socks5://host:port"`.
 </details>
+
+---
+
+## 💰 Dukung Proyek Ini
+
+Jika AI Gateway membantu Anda, pertimbangkan untuk memberikan donasi untuk mendukung pengembangan lanjutan:
+
+<div align="center">
+
+[![Saweria](https://img.shields.io/badge/💖_Donasi_di_Saweria-0xgetz-FF6B35?style=for-the-badge&logo=saweria&logoColor=white)](https://saweria.co/0xgetz)
+
+</div>
+
+Donasi Anda membantu:
+- ☕ Menjaga server dan API tetap berjalan
+- 🔧 Mengembangkan fitur baru dan dukungan provider tambahan
+- 📝 Mempertahankan dokumentasi yang berkualitas
+- 🐛 Memperbaiki bug dan merespons issue lebih cepat
+
+> Setiap kontribusi, sekecil apa pun, sangat berarti. Terima kasih! 🙏
 
 ---
 
