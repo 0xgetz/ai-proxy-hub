@@ -1,5 +1,7 @@
 <div align="center">
 
+<img src="assets/logo.png" alt="AI Gateway Logo" width="200" height="200" />
+
 # 🚀 AI Gateway (AIG)
 
 ### Proxy Middleware untuk Claude Code CLI & Codex dengan Dukungan Multi-Provider
