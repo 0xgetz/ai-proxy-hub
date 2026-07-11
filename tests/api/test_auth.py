@@ -1,9 +1,15 @@
 from unittest.mock import patch
 
+import pytest
 from fastapi.testclient import TestClient
 
 from api.app import create_app
 from api.dependencies import get_settings
+from api.runtime import AppRuntime
+from config.security import (
+    ensure_network_bind_is_authenticated,
+    normalize_presented_api_token,
+)
 from config.settings import Settings
 
 app = create_app()
@@ -116,3 +122,66 @@ def test_root_get_requires_auth_but_root_probes_are_public():
     assert options.headers["Allow"] == "GET, HEAD, OPTIONS"
 
     app.dependency_overrides.clear()
+
+
+def test_presented_token_strips_model_suffix_only_when_configured_has_no_colon():
+    assert (
+        normalize_presented_api_token("secret:claude-sonnet", "secret") == "secret"
+    )
+    # Configured tokens that contain ":" must match in full (no strip).
+    assert (
+        normalize_presented_api_token("ab:cd", "ab:cd") == "ab:cd"
+    )
+    assert normalize_presented_api_token("ab:cd:extra", "ab:cd") == "ab:cd:extra"
+
+
+def test_auth_accepts_configured_token_containing_colon():
+    client = TestClient(app)
+    settings = Settings()
+    settings.anthropic_auth_token = "part1:part2"
+    app.dependency_overrides[get_settings] = lambda: settings
+
+    payload = {
+        "model": "claude-3-sonnet",
+        "messages": [{"role": "user", "content": "hello"}],
+    }
+
+    with patch("api.routes.get_token_count", return_value=1):
+        r = client.post(
+            "/v1/messages/count_tokens",
+            json=payload,
+            headers={"X-API-Key": "part1:part2"},
+        )
+        assert r.status_code == 200
+
+        # Colon suffix is NOT stripped when configured token has a colon.
+        r = client.post(
+            "/v1/messages/count_tokens",
+            json=payload,
+            headers={"X-API-Key": "part1"},
+        )
+        assert r.status_code == 401
+
+    app.dependency_overrides.clear()
+
+
+def test_network_bind_requires_auth_token():
+    ensure_network_bind_is_authenticated(
+        Settings.model_construct(host="127.0.0.1", anthropic_auth_token="")
+    )
+    ensure_network_bind_is_authenticated(
+        Settings.model_construct(host="0.0.0.0", anthropic_auth_token="strong-token")
+    )
+    with pytest.raises(RuntimeError, match="ANTHROPIC_AUTH_TOKEN is required"):
+        ensure_network_bind_is_authenticated(
+            Settings.model_construct(host="0.0.0.0", anthropic_auth_token="")
+        )
+
+
+@pytest.mark.asyncio
+async def test_startup_rejects_unauthenticated_non_loopback_bind():
+    app = create_app(lifespan_enabled=False)
+    settings = Settings.model_construct(host="0.0.0.0", anthropic_auth_token="")
+    runtime = AppRuntime.for_app(app, settings=settings)
+    with pytest.raises(RuntimeError, match="ANTHROPIC_AUTH_TOKEN is required"):
+        await runtime.startup()
