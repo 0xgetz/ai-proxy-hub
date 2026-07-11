@@ -115,3 +115,22 @@ async def test_on_telegram_message_unauthorized(telegram_platform):
     await telegram_platform._on_telegram_message(mock_update, MagicMock())
 
     handler.assert_not_called()
+
+
+@pytest.mark.asyncio
+async def test_empty_allowed_user_id_rejects_all_messages():
+    """When allowed_user_id is empty/None, no Telegram senders are accepted (fail-closed)."""
+    with patch("messaging.platforms.telegram.TELEGRAM_AVAILABLE", True):
+        platform = TelegramRuntime(bot_token="test_token", allowed_user_id=None)
+        handler = AsyncMock()
+        platform.on_message(handler)
+
+        mock_update = MagicMock()
+        mock_update.message.text = "hello"
+        mock_update.message.message_id = 1
+        mock_update.effective_user.id = 12345
+        mock_update.effective_chat.id = 6789
+        mock_update.message.reply_to_message = None
+
+        await platform._on_telegram_message(mock_update, MagicMock())
+        handler.assert_not_called()
