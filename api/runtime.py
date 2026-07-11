@@ -12,6 +12,7 @@ from fastapi import FastAPI
 from loguru import logger
 
 from api.admin_urls import local_admin_url
+from config.security import ensure_network_bind_is_authenticated
 from config.settings import Settings, get_settings
 from providers.exceptions import ServiceUnavailableError
 from providers.registry import ProviderRegistry
@@ -101,11 +102,12 @@ class AppRuntime:
         return cls(app=app, settings=settings or get_settings())
 
     async def startup(self) -> None:
-        logger.info("Starting Claude Code Proxy...")
+        logger.info("Starting AI Gateway...")
         admin_url = local_admin_url(self.settings)
         self._provider_registry = ProviderRegistry()
         self.app.state.provider_registry = self._provider_registry
         try:
+            ensure_network_bind_is_authenticated(self.settings)
             warn_if_process_auth_token(self.settings)
             await self._validate_configured_models_best_effort()
             self._provider_registry.start_model_list_refresh(self.settings)
