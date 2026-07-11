@@ -20,3 +20,9 @@ exposure requires explicit configuration and a strong server token.
 Please open a private security advisory or contact the repository owner via
 GitHub. Do not file public issues for unfixed remote code execution or auth
 bypass reports.
+
+## Known issue
+
+If `config/settings.py` was corrupted during an automated push, restore it from
+the local source of truth or re-apply the host default `127.0.0.1` and auth
+requirements documented above.
