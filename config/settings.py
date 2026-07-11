@@ -1,1 +1,1 @@
-@file:/tmp/mcp_config_settings.py
+@file:/tmp/ONLY_SETTINGS_CONTENT.txt
