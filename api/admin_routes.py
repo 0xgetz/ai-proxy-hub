@@ -62,11 +62,20 @@ def _origin_is_local(origin: str | None) -> bool:
 
 
 def require_loopback_admin(request: Request) -> None:
-    """Allow admin access only from the local machine."""
+    """Allow admin access only from the local machine.
+
+    Rejects reverse-proxy forwarding headers so a misconfigured proxy cannot make
+    remote clients appear as loopback via ``X-Forwarded-For`` / ``X-Real-IP``.
+    """
 
     client_host = request.client.host if request.client else None
     if not _is_loopback_host(client_host):
         raise HTTPException(status_code=403, detail="Admin UI is local-only")
+
+    # Defense in depth: real local browsers do not set these; reverse proxies do.
+    for header in ("x-forwarded-for", "x-real-ip", "forwarded"):
+        if request.headers.get(header):
+            raise HTTPException(status_code=403, detail="Admin UI is local-only")
 
     origin = request.headers.get("origin")
     if not _origin_is_local(origin):
@@ -237,7 +246,7 @@ def _next_admin_url() -> str:
         field["key"]: field["value"] for field in load_config_response()["fields"]
     }
     settings = Settings.model_construct(
-        host=fields.get("HOST") or "0.0.0.0",
+        host=fields.get("HOST") or "127.0.0.1",
         port=int(fields.get("PORT") or 8082),
     )
     return local_admin_url(settings)
