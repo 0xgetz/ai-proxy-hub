@@ -94,11 +94,15 @@ def require_api_key(
     """Require a server API key (Anthropic-style).
 
     Checks `x-api-key` header or `Authorization: Bearer ...` against
-    `Settings.anthropic_auth_token`. If `ANTHROPIC_AUTH_TOKEN` is empty, this is a no-op.
+    `Settings.anthropic_auth_token`. If `ANTHROPIC_AUTH_TOKEN` is empty, this is a
+    no-op (only safe when the server binds loopback; non-loopback binds are
+    rejected at startup without a token).
     """
+    from config.security import normalize_presented_api_token
+
     anthropic_auth_token = settings.anthropic_auth_token.strip()
     if not anthropic_auth_token:
-        # No API key configured -> allow
+        # No API key configured -> allow (loopback-only deployments)
         return
 
     header = (
@@ -110,13 +114,11 @@ def require_api_key(
         raise HTTPException(status_code=401, detail="Missing API key")
 
     # Support both raw key in X-API-Key and Bearer token in Authorization
-    token = header.strip()
+    raw = header.strip()
     if header.lower().startswith("bearer "):
-        token = header.split(" ", 1)[1].strip()
+        raw = header.split(" ", 1)[1].strip()
 
-    # Strip anything after the first colon to handle tokens with appended model names
-    if token and ":" in token:
-        token = token.split(":", 1)[0].strip()
+    token = normalize_presented_api_token(raw, anthropic_auth_token)
 
     # Constant-time comparison to avoid leaking the configured token via
     # response-time differences on a per-byte mismatch (CWE-208).
