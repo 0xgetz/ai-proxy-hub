@@ -73,6 +73,11 @@ class TelegramRuntime:
         self.allowed_user_id = allowed_user_id
         if not self.bot_token:
             logger.warning("TELEGRAM_BOT_TOKEN not set")
+        if not (self.allowed_user_id or "").strip():
+            logger.warning(
+                "ALLOWED_TELEGRAM_USER_ID is empty; all Telegram senders will be rejected "
+                "(fail-closed). Set it to your numeric user id before using the bot."
+            )
 
         self._application: Application | None = None
         self._message_handler: InboundMessageHandler | None = None
