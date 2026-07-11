@@ -1,1 +1,1 @@
-loading-from-disk-failed-if-you-see-this
+@file:/tmp/mcp_config_settings.py
