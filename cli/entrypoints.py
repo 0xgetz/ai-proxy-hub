@@ -142,6 +142,7 @@ def init() -> None:
     config_dir.mkdir(parents=True, exist_ok=True)
     template = _load_env_template()
     env_file.write_text(template, encoding="utf-8")
+    os.chmod(env_file, 0o600)
     print(f"Config created at {env_file}")
     print("Edit it to set your API keys and model preferences, then run: aig-server")
 
@@ -159,6 +160,7 @@ def _migrate_legacy_env_if_missing() -> Path | None:
             continue
         env_file.parent.mkdir(parents=True, exist_ok=True)
         shutil.copyfile(legacy_env, env_file)
+        os.chmod(env_file, 0o600)
         return legacy_env
 
     return None

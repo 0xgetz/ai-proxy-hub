@@ -32,7 +32,9 @@ def telegram_text_message_from_update(
 
     user_id = str(update.effective_user.id)
     chat_id = str(update.effective_chat.id)
-    if allowed_user_id and user_id != str(allowed_user_id).strip():
+    # Fail-closed: without an allowlist, reject every sender (mirrors Discord channels).
+    allowed = (allowed_user_id or "").strip()
+    if not allowed or user_id != allowed:
         logger.warning("Unauthorized access attempt from {}", user_id)
         return None
 
@@ -98,7 +100,8 @@ def telegram_voice_request_from_update(
         return None
 
     user_id = str(effective_user.id)
-    if allowed_user_id and user_id != str(allowed_user_id).strip():
+    allowed = (allowed_user_id or "").strip()
+    if not allowed or user_id != allowed:
         logger.warning("Unauthorized voice access attempt from {}", user_id)
         return None
 
