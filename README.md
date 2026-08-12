@@ -6,13 +6,15 @@
 
 ### Proxy Middleware untuk Claude Code CLI & Codex dengan Dukungan Multi-Provider
 
-**v2.4.0** · Python ≥ 3.14 · FastAPI · OpenAI-Compatible
+**v2.4.0** · Python ≥ 3.12 · FastAPI · OpenAI-Compatible
 
-[![Python](https://img.shields.io/badge/Python-3.14+-blue?logo=python&logoColor=white)](https://www.python.org/)
+[![Python](https://img.shields.io/badge/Python-3.12+-blue?logo=python&logoColor=white)](https://www.python.org/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.136+-green?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
 [![License](https://img.shields.io/badge/License-MIT-yellow)](LICENSE)
 [![Version](https://img.shields.io/badge/Version-2.4.0-orange)]()
 [![Saweria](https://img.shields.io/badge/Donasi-Saweria-FF6B35?logo=saweria&logoColor=white)](https://saweria.co/0xgetz)
+
+[English](README.en.md) | [Bahasa Indonesia](README.id.md) | [中文](README.zh.md) | [Español](README.es.md) | [日本語](README.ja.md)
 
 </div>
 
