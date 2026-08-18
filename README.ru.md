@@ -2,16 +2,15 @@
 
 <img src="assets/logo.png" alt="AI Gateway Logo" width="200" height="200" />
 
-# 🚀 AI Gateway (AIG)
+# AI Gateway (AIG)
 
-### Multi-Provider Proxy Middleware for Claude Code CLI & Codex
+### Мультипровайдерное прокси-промежуточное ПО для Claude Code CLI и Codex
 
 **v2.4.0** · Python ≥ 3.14 · FastAPI · OpenAI-Compatible
 
 [![Python](https://img.shields.io/badge/Python-3.14+-blue?logo=python&logoColor=white)](https://www.python.org/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.136+-green?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
 [![License](https://img.shields.io/badge/License-MIT-yellow)](LICENSE)
-[![Version](https://img.shields.io/badge/Version-2.4.0-orange)]()
 
 [![EN](https://img.shields.io/badge/EN-English-1f6feb?style=flat-square)](README.en.md) [![ID](https://img.shields.io/badge/ID-Bahasa%20Indonesia-d9480f?style=flat-square)](README.id.md) [![ZH](https://img.shields.io/badge/ZH-中文-b91c1c?style=flat-square)](README.zh.md) [![ES](https://img.shields.io/badge/ES-Español-15803d?style=flat-square)](README.es.md) [![JA](https://img.shields.io/badge/JA-日本語-7c3aed?style=flat-square)](README.ja.md)
 [![FR](https://img.shields.io/badge/FR-Français-2563eb?style=flat-square)](README.fr.md) [![DE](https://img.shields.io/badge/DE-Deutsch-1d4ed8?style=flat-square)](README.de.md) [![PT-BR](https://img.shields.io/badge/PT-BR-Português%20(Brasil)-047857?style=flat-square)](README.pt-BR.md) [![IT](https://img.shields.io/badge/IT-Italiano-166534?style=flat-square)](README.it.md) [![TR](https://img.shields.io/badge/TR-Türkçe-be123c?style=flat-square)](README.tr.md)
@@ -21,29 +20,24 @@
 
 ---
 
-## 📖 About AI Gateway
+## AI Gateway
 
-**AI Gateway (AIG)** is a local proxy middleware that bridges **Claude Code CLI** (Anthropic API) and **OpenAI Codex CLI** with a wide array of AI providers without requiring changes to your application code.
+AI Gateway (AIG) — это локальное прокси-промежуточное ПО, которое подключает Claude Code CLI и OpenAI Codex CLI к нескольким поставщикам ИИ без изменения кода приложения.
 
-The gateway accepts Anthropic Messages format from Claude Code and OpenAI Responses format from Codex, translates them into the format understood by the target provider (NVIDIA NIM, OpenRouter, Gemini, DeepSeek, local models, etc.), and streams responses back to the CLI using the exact protocol expected.
+### Зачем нужен AI Gateway?
 
-### Why AI Gateway?
-
-| Challenge | AI Gateway Solution |
+| Задача | Решение AI Gateway |
 |---|---|
-| Claude Code only supports Anthropic API | 🔁 Route requests to any provider (NIM, Gemini, DeepSeek, etc.) |
-| High Anthropic API costs | 💰 Utilize free or cost-effective alternative providers |
-| Try different models without changing code | 🎛️ Switch providers seamlessly via environment variables or admin panel |
-| Control via Telegram/Discord | 💬 Integrated messaging bots |
-| Real-time monitoring & configuration | 📊 Web-based admin dashboard |
+| CLI используют разные API | Прозрачный перевод между протоколами Anthropic, OpenAI и настроенных поставщиков |
 
 ---
 
-## 🔌 Supported Providers
+## Поддерживаемые поставщики
 
-AI Gateway supports **17 providers** — 14 cloud-based and 3 local:
+AI Gateway поддерживает **17 поставщиков**: 14 облачных сервисов и 3 локальных поставщика.
 
-### Cloud Providers
+### Облачные поставщики
+
 1. **NVIDIA NIM** (`nvidia_nim`)
 2. **OpenRouter** (`open_router`)
 3. **Gemini / Google** (`gemini`)
@@ -59,28 +53,38 @@ AI Gateway supports **17 providers** — 14 cloud-based and 3 local:
 13. **Groq** (`groq`)
 14. **Cerebras** (`cerebras`)
 
-### Local Providers (No API Key Required)
-15. **LM Studio** (`lmstudio` - `http://localhost:1234/v1`)
-16. **Llama.cpp** (`llamacpp` - `http://localhost:8080/v1`)
-17. **Ollama** (`ollama` - `http://localhost:11434`)
+### Локальные поставщики (без ключа API)
+
+15. **LM Studio** (`lmstudio` — `http://localhost:1234/v1`)
+16. **Llama.cpp** (`llamacpp` — `http://localhost:8080/v1`)
+17. **Ollama** (`ollama` — `http://localhost:11434`)
 
 ---
 
-## 🚀 Quick Installation
+## Быстрая установка
 
 ```bash
-# Clone repository
 git clone https://github.com/0xgetz/ai-proxy-hub.git
 cd ai-proxy-hub
-
-# Install dependencies using uv or pip
-pip install -e .
+uv sync
+cp .env.example .env
+aig-server
 ```
 
-For detailed setup instructions, architecture documentation, and usage guides, please refer to [README.md](README.md) or [ARCHITECTURE.md](ARCHITECTURE.md).
+## Основные команды
+
+| Command | Purpose |
+|---|---|
+| `aig-server` | Start the gateway server |
+| `aig-init` | Initialize the configuration |
+| `aig-claude` | Start Claude Code through the gateway |
+| `aig-codex` | Start Codex through the gateway |
+| `ai-gateway` | Alias for `aig-server` |
+
+Инструкции по настройке, безопасности и эксплуатации доступны в [основном README](README.md) и [ARCHITECTURE.md](ARCHITECTURE.md).
 
 ---
 
-## 📄 License
+## Лицензия
 
-Distributed under the MIT License. See [LICENSE](LICENSE) for more information.
+Распространяется по лицензии MIT. Подробности см. в [LICENSE](LICENSE).

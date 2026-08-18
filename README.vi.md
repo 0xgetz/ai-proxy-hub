@@ -2,16 +2,15 @@
 
 <img src="assets/logo.png" alt="AI Gateway Logo" width="200" height="200" />
 
-# 🚀 AI Gateway (AIG)
+# AI Gateway (AIG)
 
-### Middleware de Proxy Multiproveedor para Claude Code CLI y Codex
+### Phần mềm trung gian proxy đa nhà cung cấp cho Claude Code CLI và Codex
 
 **v2.4.0** · Python ≥ 3.14 · FastAPI · OpenAI-Compatible
 
 [![Python](https://img.shields.io/badge/Python-3.14+-blue?logo=python&logoColor=white)](https://www.python.org/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.136+-green?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
 [![License](https://img.shields.io/badge/License-MIT-yellow)](LICENSE)
-[![Version](https://img.shields.io/badge/Version-2.4.0-orange)]()
 
 [![EN](https://img.shields.io/badge/EN-English-1f6feb?style=flat-square)](README.en.md) [![ID](https://img.shields.io/badge/ID-Bahasa%20Indonesia-d9480f?style=flat-square)](README.id.md) [![ZH](https://img.shields.io/badge/ZH-中文-b91c1c?style=flat-square)](README.zh.md) [![ES](https://img.shields.io/badge/ES-Español-15803d?style=flat-square)](README.es.md) [![JA](https://img.shields.io/badge/JA-日本語-7c3aed?style=flat-square)](README.ja.md)
 [![FR](https://img.shields.io/badge/FR-Français-2563eb?style=flat-square)](README.fr.md) [![DE](https://img.shields.io/badge/DE-Deutsch-1d4ed8?style=flat-square)](README.de.md) [![PT-BR](https://img.shields.io/badge/PT-BR-Português%20(Brasil)-047857?style=flat-square)](README.pt-BR.md) [![IT](https://img.shields.io/badge/IT-Italiano-166534?style=flat-square)](README.it.md) [![TR](https://img.shields.io/badge/TR-Türkçe-be123c?style=flat-square)](README.tr.md)
@@ -21,32 +20,71 @@
 
 ---
 
-## 📖 Sobre AI Gateway
+## AI Gateway
 
-**AI Gateway (AIG)** es un middleware de proxy local que conecta **Claude Code CLI** (Anthropic API) y **OpenAI Codex CLI** con múltiples proveedores de IA sin necesidad de cambiar el código de su aplicación.
+AI Gateway (AIG) là phần mềm trung gian proxy cục bộ kết nối Claude Code CLI và OpenAI Codex CLI với nhiều nhà cung cấp AI mà không cần thay đổi mã ứng dụng.
 
-El gateway acepta el formato de mensajes de Anthropic y las respuestas de OpenAI, traduciéndolas al formato compatible con el proveedor de destino (NVIDIA NIM, OpenRouter, Gemini, DeepSeek, etc.) y transmitiendo la respuesta de vuelta al CLI.
+### Vì sao dùng AI Gateway?
 
----
-
-## 🔌 Proveedores Soportados
-
-AI Gateway soporta **17 proveedores** (14 en la nube y 3 locales: NVIDIA NIM, OpenRouter, Gemini, DeepSeek, Mistral, Codestral, Kimi, Wafer, Fireworks AI, Z.ai, OpenCode Zen, OpenCode Go, Groq, Cerebras, LM Studio, Llama.cpp, Ollama).
+| Nhu cầu | Giải pháp AI Gateway |
+|---|---|
+| Các CLI dùng những API khác nhau | Chuyển đổi minh bạch giữa giao thức Anthropic, OpenAI và các nhà cung cấp đã cấu hình |
 
 ---
 
-## 🚀 Instalación Rápida
+## Nhà cung cấp được hỗ trợ
+
+AI Gateway hỗ trợ **17 nhà cung cấp**: 14 dịch vụ đám mây và 3 nhà cung cấp cục bộ.
+
+### Nhà cung cấp đám mây
+
+1. **NVIDIA NIM** (`nvidia_nim`)
+2. **OpenRouter** (`open_router`)
+3. **Gemini / Google** (`gemini`)
+4. **DeepSeek** (`deepseek`)
+5. **Mistral** (`mistral`)
+6. **Codestral** (`mistral_codestral`)
+7. **Kimi / Moonshot** (`kimi`)
+8. **Wafer** (`wafer`)
+9. **Fireworks AI** (`fireworks`)
+10. **Z.ai** (`zai`)
+11. **OpenCode Zen** (`opencode`)
+12. **OpenCode Go** (`opencode_go`)
+13. **Groq** (`groq`)
+14. **Cerebras** (`cerebras`)
+
+### Nhà cung cấp cục bộ (không cần khóa API)
+
+15. **LM Studio** (`lmstudio` — `http://localhost:1234/v1`)
+16. **Llama.cpp** (`llamacpp` — `http://localhost:8080/v1`)
+17. **Ollama** (`ollama` — `http://localhost:11434`)
+
+---
+
+## Cài đặt nhanh
 
 ```bash
 git clone https://github.com/0xgetz/ai-proxy-hub.git
 cd ai-proxy-hub
-pip install -e .
+uv sync
+cp .env.example .env
+aig-server
 ```
 
-Consulte [README.md](README.md) para más detalles.
+## Lệnh chính
+
+| Command | Purpose |
+|---|---|
+| `aig-server` | Start the gateway server |
+| `aig-init` | Initialize the configuration |
+| `aig-claude` | Start Claude Code through the gateway |
+| `aig-codex` | Start Codex through the gateway |
+| `ai-gateway` | Alias for `aig-server` |
+
+Để biết hướng dẫn cấu hình, bảo mật và vận hành, hãy xem [README chính](README.md) và [ARCHITECTURE.md](ARCHITECTURE.md).
 
 ---
 
-## 📄 Licencia
+## Giấy phép
 
-Distribuido bajo la Licencia MIT. Consulte [LICENSE](LICENSE) para más información.
+Phân phối theo giấy phép MIT. Xem [LICENSE](LICENSE) để biết thêm thông tin.
