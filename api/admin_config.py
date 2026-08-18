@@ -7,6 +7,7 @@ from collections.abc import Iterable, Mapping
 from dataclasses import dataclass
 from io import StringIO
 from pathlib import Path
+from tempfile import NamedTemporaryFile
 from typing import Any, Literal
 
 from dotenv import dotenv_values
@@ -474,9 +475,9 @@ FIELDS: tuple[ConfigFieldSpec, ...] = (
         "runtime",
         "secret",
         settings_attr="anthropic_auth_token",
-        default="freecc",
+        default="",
         secret=True,
-        description="Protects Claude/API access. It is not admin-page login.",
+        description="Protects Claude/API access. Use a long, unique token for network-exposed deployments; it is not admin-page login.",
     ),
     ConfigFieldSpec(
         "PROVIDER_RATE_LIMIT",
@@ -484,7 +485,7 @@ FIELDS: tuple[ConfigFieldSpec, ...] = (
         "runtime",
         "number",
         settings_attr="provider_rate_limit",
-        default="1",
+        default="40",
     ),
     ConfigFieldSpec(
         "PROVIDER_RATE_WINDOW",
@@ -492,7 +493,7 @@ FIELDS: tuple[ConfigFieldSpec, ...] = (
         "runtime",
         "number",
         settings_attr="provider_rate_window",
-        default="3",
+        default="60",
     ),
     ConfigFieldSpec(
         "PROVIDER_MAX_CONCURRENCY",
@@ -508,7 +509,7 @@ FIELDS: tuple[ConfigFieldSpec, ...] = (
         "runtime",
         "number",
         settings_attr="http_read_timeout",
-        default="300",
+        default="120",
     ),
     ConfigFieldSpec(
         "HTTP_WRITE_TIMEOUT",
@@ -516,7 +517,7 @@ FIELDS: tuple[ConfigFieldSpec, ...] = (
         "runtime",
         "number",
         settings_attr="http_write_timeout",
-        default="60",
+        default="10",
     ),
     ConfigFieldSpec(
         "HTTP_CONNECT_TIMEOUT",
@@ -524,14 +525,14 @@ FIELDS: tuple[ConfigFieldSpec, ...] = (
         "runtime",
         "number",
         settings_attr="http_connect_timeout",
-        default="60",
+        default="10",
     ),
     ConfigFieldSpec(
         "HOST",
         "Server Host",
         "runtime",
         settings_attr="host",
-        default="0.0.0.0",
+        default="127.0.0.1",
         restart_required=True,
     ),
     ConfigFieldSpec(
@@ -549,7 +550,7 @@ FIELDS: tuple[ConfigFieldSpec, ...] = (
         "messaging",
         "select",
         settings_attr="messaging_platform",
-        default="discord",
+        default="none",
         options=("telegram", "discord", "none"),
         session_sensitive=True,
     ),
@@ -634,7 +635,7 @@ FIELDS: tuple[ConfigFieldSpec, ...] = (
         "voice",
         "select",
         settings_attr="whisper_device",
-        default="nvidia_nim",
+        default="cpu",
         options=("cpu", "cuda", "nvidia_nim"),
         session_sensitive=True,
     ),
@@ -643,7 +644,7 @@ FIELDS: tuple[ConfigFieldSpec, ...] = (
         "Whisper Model",
         "voice",
         settings_attr="whisper_model",
-        default="openai/whisper-large-v3",
+        default="base",
         session_sensitive=True,
     ),
     ConfigFieldSpec(
@@ -706,7 +707,7 @@ FIELDS: tuple[ConfigFieldSpec, ...] = (
         "web_tools",
         "boolean",
         settings_attr="enable_web_server_tools",
-        default="true",
+        default="false",
     ),
     ConfigFieldSpec(
         "WEB_FETCH_ALLOWED_SCHEMES",
@@ -1196,9 +1197,28 @@ def write_managed_env(updates: Mapping[str, Any]) -> dict[str, Any]:
     pending_fields = changed_pending_fields(updates)
     path = managed_env_path()
     path.parent.mkdir(parents=True, exist_ok=True)
-    temp_path = path.with_suffix(path.suffix + ".tmp")
-    temp_path.write_text(render_env_file(target_values), encoding="utf-8")
-    os.replace(temp_path, path)
+    temp_path: Path | None = None
+    try:
+        with NamedTemporaryFile(
+            mode="w",
+            encoding="utf-8",
+            dir=path.parent,
+            prefix=f".{path.name}.",
+            suffix=".tmp",
+            delete=False,
+        ) as temporary_file:
+            temp_path = Path(temporary_file.name)
+            temporary_file.write(render_env_file(target_values))
+            temporary_file.flush()
+            os.fsync(temporary_file.fileno())
+        os.chmod(temp_path, 0o600)
+        os.replace(temp_path, path)
+        # An existing file can retain permissive legacy permissions after replace.
+        os.chmod(path, 0o600)
+    except Exception:
+        if temp_path is not None:
+            temp_path.unlink(missing_ok=True)
+        raise
     return {
         "applied": True,
         "valid": True,

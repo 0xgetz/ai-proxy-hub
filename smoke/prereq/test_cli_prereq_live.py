@@ -7,7 +7,7 @@ from pathlib import Path
 
 import pytest
 
-from smoke.lib.child_process import cmd_aig_init, cmd_ai_gateway_serve
+from smoke.lib.child_process import cmd_ai_gateway_serve, cmd_aig_init
 from smoke.lib.config import SmokeConfig
 from smoke.lib.server import start_server
 from smoke.lib.skips import skip_upstream_unavailable

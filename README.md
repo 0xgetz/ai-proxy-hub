@@ -6,9 +6,9 @@
 
 ### Proxy Middleware untuk Claude Code CLI & Codex dengan Dukungan Multi-Provider
 
-**v2.4.0** · Python ≥ 3.12 · FastAPI · OpenAI-Compatible
+**v2.4.0** · Python ≥ 3.14 · FastAPI · OpenAI-Compatible
 
-[![Python](https://img.shields.io/badge/Python-3.12+-blue?logo=python&logoColor=white)](https://www.python.org/)
+[![Python](https://img.shields.io/badge/Python-3.14+-blue?logo=python&logoColor=white)](https://www.python.org/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.136+-green?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
 [![License](https://img.shields.io/badge/License-MIT-yellow)](LICENSE)
 [![Version](https://img.shields.io/badge/Version-2.4.0-orange)]()
@@ -286,6 +286,18 @@ cd ai-proxy-hub
 uv run python server.py
 ```
 
+### Hapus instalasi uv tool
+
+Untuk instalasi melalui `uv tool`, gunakan skrip uninstaller resmi berikut. Skrip memeriksa proses `aig-*` yang masih berjalan dan hanya menghapus paket `ai-gateway` serta konfigurasi `~/.aig`.
+
+```bash
+curl -fsSL "https://raw.githubusercontent.com/0xgetz/ai-proxy-hub/main/scripts/uninstall.sh" | sh
+```
+
+```powershell
+irm "https://raw.githubusercontent.com/0xgetz/ai-proxy-hub/main/scripts/uninstall.ps1" | iex
+```
+
 ---
 
 ## ⚙️ Konfigurasi
@@ -392,27 +404,28 @@ MISTRAL_PROXY=""
 # ═══════════════════════════════════════════════════════
 # RATE LIMITING
 # ═══════════════════════════════════════════════════════
-PROVIDER_RATE_LIMIT=1
-PROVIDER_RATE_WINDOW=3
+PROVIDER_RATE_LIMIT=40
+PROVIDER_RATE_WINDOW=60
 PROVIDER_MAX_CONCURRENCY=5
 
 # ═══════════════════════════════════════════════════════
 # HTTP TIMEOUTS (detik)
 # ═══════════════════════════════════════════════════════
-HTTP_READ_TIMEOUT=300
-HTTP_WRITE_TIMEOUT=60
-HTTP_CONNECT_TIMEOUT=60
+HTTP_READ_TIMEOUT=120
+HTTP_WRITE_TIMEOUT=10
+HTTP_CONNECT_TIMEOUT=10
 
 # ═══════════════════════════════════════════════════════
 # SERVER
 # ═══════════════════════════════════════════════════════
-ANTHROPIC_AUTH_TOKEN="freecc"
+# Leave empty for local-only loopback use. For network exposure, generate a long random token.
+ANTHROPIC_AUTH_TOKEN=""
 AIG_OPEN_BROWSER=true
 
 # ═══════════════════════════════════════════════════════
 # MESSAGING
 # ═══════════════════════════════════════════════════════
-MESSAGING_PLATFORM="discord"  # "telegram" | "discord" | "none"
+MESSAGING_PLATFORM="none"  # "telegram" | "discord" | "none"
 MESSAGING_RATE_LIMIT=1
 MESSAGING_RATE_WINDOW=1
 
@@ -420,8 +433,8 @@ MESSAGING_RATE_WINDOW=1
 # VOICE NOTE TRANSCRIPTION
 # ═══════════════════════════════════════════════════════
 VOICE_NOTE_ENABLED=false
-WHISPER_DEVICE="nvidia_nim"  # "cpu" | "cuda" | "nvidia_nim"
-WHISPER_MODEL="openai/whisper-large-v3"
+WHISPER_DEVICE="cpu"  # "cpu" | "cuda" | "nvidia_nim"
+WHISPER_MODEL="base"
 HF_TOKEN=""
 
 # ═══════════════════════════════════════════════════════
@@ -449,7 +462,7 @@ ENABLE_FILEPATH_EXTRACTION_MOCK=true
 # ═══════════════════════════════════════════════════════
 # WEB TOOLS
 # ═══════════════════════════════════════════════════════
-ENABLE_WEB_SERVER_TOOLS=true
+ENABLE_WEB_SERVER_TOOLS=false  # Opt in only when outbound web tools are needed
 WEB_FETCH_ALLOWED_SCHEMES=http,https
 WEB_FETCH_ALLOW_PRIVATE_NETWORKS=false
 
@@ -482,10 +495,10 @@ aig-server
 uv run python server.py
 
 # Atau via uvicorn
-uv run uvicorn server:app --host 0.0.0.0 --port 8082 --timeout-graceful-shutdown 5
+uv run uvicorn server:app --host 127.0.0.1 --port 8082 --timeout-graceful-shutdown 5
 ```
 
-Server akan mulai di `http://localhost:8082` dan panel admin otomatis terbuka di browser (jika `AIG_OPEN_BROWSER=true`).
+Server akan mulai di `http://localhost:8082` dan panel admin otomatis terbuka di browser (jika `AIG_OPEN_BROWSER=true`). Untuk bind pada jaringan (`0.0.0.0` atau alamat non-loopback), isi `ANTHROPIC_AUTH_TOKEN` dengan token panjang dan unik terlebih dahulu; startup akan menolak bind tersebut jika token kosong.
 
 ### 2. Jalankan Claude Code melalui Gateway
 
@@ -565,7 +578,11 @@ http://localhost:8082/admin
 
 ![Admin Panel](assets/admin-page.png)
 
-Panel admin memungkinkan Anda mengubah konfigurasi tanpa restart server — perubahan langsung diterapkan.
+Panel admin menerapkan perubahan konfigurasi yang aman secara langsung. Perubahan bind address, port, atau integrasi yang membutuhkan restart akan diberi penanda sebelum diterapkan.
+
+### Health dan readiness
+
+Gunakan `GET /health` sebagai **liveness probe** untuk memastikan proses HTTP berjalan. Gunakan `GET /readyz` sebagai **readiness probe** untuk memastikan registry provider tersedia dan validasi model saat startup tidak gagal. Endpoint `/readyz` mengembalikan `503` bila gateway belum siap menerima traffic provider.
 
 ---
 
@@ -639,8 +656,14 @@ uv sync --extra voice_local
 ### Unit Tests
 
 ```bash
-# Jalankan semua test
+# Jalankan semua test deterministik
 uv run pytest
+
+# Jalankan quality gate yang sama dengan CI
+uv run ruff format --check
+uv run ruff check
+uv run ty check
+NO_COLOR=1 uv export --format requirements-txt --no-hashes --all-groups --no-emit-project | NO_COLOR=1 uv run pip-audit --requirement /dev/stdin --progress-spinner off
 
 # Jalankan test spesifik
 uv run pytest tests/api/
@@ -672,7 +695,7 @@ uv run pytest tests/contracts/
 
 ### CI/CD
 
-Proyek dilengkapi GitHub Actions workflow (`.github/workflows/tests.yml`) yang menjalankan test otomatis pada setiap push dan pull request.
+Proyek dilengkapi GitHub Actions workflow (`.github/workflows/tests.yml`) yang menjalankan format check, lint, type check, unit test, dan pemindaian kerentanan dependency terkunci pada setiap push dan pull request.
 
 ---
 

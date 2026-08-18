@@ -20,11 +20,11 @@ def test_readme_uninstall_one_liners_use_raw_github_urls() -> None:
 
     assert (
         'curl -fsSL "https://raw.githubusercontent.com/'
-        'Alishahryar1/ai-gateway/main/scripts/uninstall.sh" | sh'
+        '0xgetz/ai-proxy-hub/main/scripts/uninstall.sh" | sh'
     ) in text
     assert (
         'irm "https://raw.githubusercontent.com/'
-        'Alishahryar1/ai-gateway/main/scripts/uninstall.ps1" | iex'
+        '0xgetz/ai-proxy-hub/main/scripts/uninstall.ps1" | iex'
     ) in text
     assert "blob/main/scripts/uninstall.sh?raw=1" not in text
     assert "blob/main/scripts/uninstall.ps1?raw=1" not in text
@@ -127,8 +127,8 @@ def test_uninstall_sh_fails_when_aig_commands_are_running() -> None:
 
 def test_uninstall_ps1_removes_uv_tool_and_purges_aig_home() -> None:
     text = _script_text("uninstall.ps1")
-    tool_body = _braced_body(text, "function Uninstall-FreeClaudeCode")
-    purge_body = _braced_body(text, "function Purge-FccHome")
+    tool_body = _braced_body(text, "function Uninstall-AiGateway")
+    purge_body = _braced_body(text, "function Purge-AigHome")
 
     assert "Does not remove uv, Claude Code, Codex" in text
     assert "uv tool uninstall" in tool_body
@@ -138,7 +138,7 @@ def test_uninstall_ps1_removes_uv_tool_and_purges_aig_home() -> None:
     assert "aborting before deleting ~/.aig." in tool_body
     assert "Remove-Item" in purge_body
     assert purge_body.count("Remove-Item -LiteralPath") == 1
-    assert '$FccHomeDirname = ".aig"' in text
+    assert '$AigHomeDirname = ".aig"' in text
     assert "npm uninstall" not in text
     assert "uv self uninstall" not in text
     assert "uv python uninstall" not in text
@@ -146,7 +146,7 @@ def test_uninstall_ps1_removes_uv_tool_and_purges_aig_home() -> None:
 
 def test_uninstall_ps1_fails_when_aig_commands_are_running() -> None:
     text = _script_text("uninstall.ps1")
-    guard_body = _braced_body(text, "function Assert-NoFccProcessesRunning")
+    guard_body = _braced_body(text, "function Assert-NoAigProcessesRunning")
 
     for command in (
         "aig-server",
@@ -157,12 +157,12 @@ def test_uninstall_ps1_fails_when_aig_commands_are_running() -> None:
     ):
         assert command in text
 
-    assert "FccCommands" in text
+    assert "AigCommands" in text
 
     assert "AI Gateway is still running" in guard_body
     assert (
         'Write-Step "Checking for running AI Gateway processes"\n'
-        "Assert-NoFccProcessesRunning" in text
+        "Assert-NoAigProcessesRunning" in text
     )
 
 
@@ -236,9 +236,7 @@ def test_uninstall_sh_missing_tool_still_deletes_aig_home(tmp_path: Path) -> Non
     bin_dir.mkdir(parents=True)
     uv = bin_dir / "uv"
     uv.write_text(
-        "#!/bin/sh\n"
-        "printf '%s\\n' 'tool ai-gateway is not installed' >&2\n"
-        "exit 2\n",
+        "#!/bin/sh\nprintf '%s\\n' 'tool ai-gateway is not installed' >&2\nexit 2\n",
         encoding="utf-8",
     )
     uv.chmod(uv.stat().st_mode | stat.S_IXUSR)

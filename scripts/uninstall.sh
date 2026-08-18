@@ -1,9 +1,9 @@
 #!/bin/sh
 set -eu
 
-PACKAGE_NAME="free-claude-code"
-FCC_HOME_DIRNAME=".fcc"
-FCC_COMMANDS="fcc-server fcc-claude fcc-codex fcc-init free-claude-code"
+PACKAGE_NAME="ai-gateway"
+AIG_HOME_DIRNAME=".aig"
+AIG_COMMANDS="aig-server aig-claude aig-codex aig-init ai-gateway"
 
 dry_run=0
 
@@ -11,7 +11,7 @@ show_usage() {
     cat <<'USAGE'
 Usage: uninstall.sh [options]
 
-Removes the Free Claude Code uv tool and deletes ~/.fcc/.
+Removes the AI Gateway uv tool and deletes ~/.aig/.
 Does not remove uv, Claude Code, Codex, or the uv-managed Python runtime.
 
 Options:
@@ -86,7 +86,7 @@ add_uv_to_path() {
     export PATH
 }
 
-is_fcc_command_running() {
+is_aig_command_running() {
     command_name=$1
 
     if command -v pgrep >/dev/null 2>&1; then
@@ -106,21 +106,21 @@ is_fcc_command_running() {
     return 1
 }
 
-assert_no_fcc_processes_running() {
+assert_no_aig_processes_running() {
     running=""
 
-    for command_name in $FCC_COMMANDS; do
-        if is_fcc_command_running "$command_name"; then
+    for command_name in $AIG_COMMANDS; do
+        if is_aig_command_running "$command_name"; then
             running="${running} ${command_name}"
         fi
     done
 
     if [ -n "$running" ]; then
-        fail "Free Claude Code is still running (${running# }). Stop those processes, then rerun uninstall."
+        fail "AI Gateway is still running (${running# }). Stop those processes, then rerun uninstall."
     fi
 }
 
-uninstall_free_claude_code() {
+uninstall_ai_gateway() {
     add_uv_to_path
 
     if ! command -v uv >/dev/null 2>&1; then
@@ -136,26 +136,26 @@ uninstall_free_claude_code() {
             status=$?
         fi
         if is_missing_uv_tool_error "$output"; then
-            printf 'Free Claude Code uv tool not installed or already removed; skipping uv tool uninstall.\n'
+            printf 'AI Gateway uv tool not installed or already removed; skipping uv tool uninstall.\n'
             return 0
         fi
         if [ -n "$output" ]; then
             printf '%s\n' "$output" >&2
         fi
-        fail "uv tool uninstall $PACKAGE_NAME failed with exit code $status; aborting before deleting ~/.fcc."
+        fail "uv tool uninstall $PACKAGE_NAME failed with exit code $status; aborting before deleting ~/.aig."
     fi
 }
 
-purge_fcc_home() {
-    [ -n "${HOME:-}" ] || fail "HOME is not set; cannot locate ~/.fcc."
+purge_aig_home() {
+    [ -n "${HOME:-}" ] || fail "HOME is not set; cannot locate ~/.aig."
 
-    fcc_home="$HOME/$FCC_HOME_DIRNAME"
-    if [ ! -e "$fcc_home" ]; then
-        printf 'No FCC config directory at %s; skipping purge.\n' "$fcc_home"
+    aig_home="$HOME/$AIG_HOME_DIRNAME"
+    if [ ! -e "$aig_home" ]; then
+        printf 'No AI Gateway config directory at %s; skipping purge.\n' "$aig_home"
         return 0
     fi
 
-    run rm -rf "$fcc_home"
+    run rm -rf "$aig_home"
 }
 
 parse_args() {
@@ -179,14 +179,14 @@ parse_args() {
 
 parse_args "$@"
 
-step "Checking for running Free Claude Code processes"
-assert_no_fcc_processes_running
+step "Checking for running AI Gateway processes"
+assert_no_aig_processes_running
 
-step "Removing Free Claude Code uv tool"
-uninstall_free_claude_code
+step "Removing AI Gateway uv tool"
+uninstall_ai_gateway
 
-step "Purging FCC config and data from ~/.fcc"
-purge_fcc_home
+step "Purging AI Gateway config and data from ~/.aig"
+purge_aig_home
 
-printf '\nFree Claude Code has been removed.\n'
+printf '\nAI Gateway has been removed.\n'
 printf 'uv, Claude Code, Codex, and the uv-managed Python runtime were left installed.\n'

@@ -18,6 +18,7 @@ from .nim import NimSettings
 from .paths import default_claude_workspace_path, managed_env_path
 from .provider_ids import SUPPORTED_PROVIDER_IDS
 
+
 @dataclass(frozen=True, slots=True)
 class ConfiguredChatModelRef:
     """A unique configured chat model reference and the env keys that set it."""
@@ -26,6 +27,7 @@ class ConfiguredChatModelRef:
     provider_id: str
     model_id: str
     sources: tuple[str, ...]
+
 
 def _env_files() -> tuple[Path, ...]:
     """Return env file paths in priority order (later overrides earlier)."""
@@ -37,6 +39,7 @@ def _env_files() -> tuple[Path, ...]:
         files.append(Path(explicit))
     return tuple(files)
 
+
 def _configured_env_files(model_config: Mapping[str, Any]) -> tuple[Path, ...]:
     """Return the currently configured env files for Settings."""
     configured = model_config.get("env_file")
@@ -45,6 +48,7 @@ def _configured_env_files(model_config: Mapping[str, Any]) -> tuple[Path, ...]:
     if isinstance(configured, (str, Path)):
         return (Path(configured),)
     return tuple(Path(item) for item in configured)
+
 
 def _env_file_value(path: Path, key: str) -> str | None:
     """Return a dotenv value when the file explicitly defines the key."""
@@ -61,6 +65,7 @@ def _env_file_value(path: Path, key: str) -> str | None:
     value = values[key]
     return "" if value is None else value
 
+
 def _env_file_override(model_config: Mapping[str, Any], key: str) -> str | None:
     """Return the last configured dotenv value that explicitly defines a key."""
     configured_value: str | None = None
@@ -69,6 +74,7 @@ def _env_file_override(model_config: Mapping[str, Any], key: str) -> str | None:
         if value is not None:
             configured_value = value
     return configured_value
+
 
 class Settings(BaseSettings):
     """Application settings loaded from environment variables."""
@@ -98,7 +104,7 @@ class Settings(BaseSettings):
     cerebras_api_key: str = Field(default="", validation_alias="CEREBRAS_API_KEY")
 
     messaging_platform: str = Field(
-        default="discord", validation_alias="MESSAGING_PLATFORM"
+        default="none", validation_alias="MESSAGING_PLATFORM"
     )
     messaging_rate_limit: int = Field(
         default=1, validation_alias="MESSAGING_RATE_LIMIT"
@@ -222,7 +228,7 @@ class Settings(BaseSettings):
     nim: NimSettings = Field(default_factory=NimSettings)
 
     voice_note_enabled: bool = Field(
-        default=True, validation_alias="VOICE_NOTE_ENABLED"
+        default=False, validation_alias="VOICE_NOTE_ENABLED"
     )
     whisper_device: str = Field(default="cpu", validation_alias="WHISPER_DEVICE")
     whisper_model: str = Field(default="base", validation_alias="WHISPER_MODEL")
@@ -473,6 +479,7 @@ class Settings(BaseSettings):
         env_file_encoding="utf-8",
         extra="ignore",
     )
+
 
 @lru_cache
 def get_settings() -> Settings:

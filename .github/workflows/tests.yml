@@ -71,3 +71,29 @@ jobs:
 
       - name: Run
         run: ${{ matrix.run }}
+
+  dependency-audit:
+    name: dependency-audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.ref }}
+          repository: ${{ github.event.pull_request.head.repo.full_name || github.repository }}
+          fetch-depth: 1
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@fac544c07dec837d0ccb6301d7b5580bf5edae39
+        with:
+          version: "0.11.15"
+          enable-cache: true
+          cache-python: true
+
+      - name: Audit locked dependencies
+        run: >-
+          NO_COLOR=1 uv export --format requirements-txt --no-hashes --all-groups
+          --no-emit-project | NO_COLOR=1 uv run pip-audit --requirement /dev/stdin
+          --progress-spinner off

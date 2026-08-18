@@ -52,6 +52,26 @@ def test_health(client: TestClient):
     assert response.json()["status"] == "healthy"
 
 
+def test_readyz(client: TestClient):
+    response = client.get("/readyz")
+
+    assert response.status_code == 200
+    assert response.json() == {"status": "ready"}
+
+
+def test_readyz_reports_missing_registry() -> None:
+    app_without_lifespan = create_app(lifespan_enabled=False)
+
+    with TestClient(app_without_lifespan) as test_client:
+        response = test_client.get("/readyz")
+
+    assert response.status_code == 503
+    assert response.json() == {
+        "status": "not_ready",
+        "checks": ["provider_registry_unavailable"],
+    }
+
+
 def test_models_list(client: TestClient):
     response = client.get("/v1/models")
     assert response.status_code == 200
@@ -69,6 +89,8 @@ def test_probe_endpoints_return_204_with_allow_headers(client: TestClient):
         client.options("/"),
         client.head("/health"),
         client.options("/health"),
+        client.head("/readyz"),
+        client.options("/readyz"),
         client.head("/v1/messages"),
         client.options("/v1/messages"),
         client.head("/v1/messages/count_tokens"),

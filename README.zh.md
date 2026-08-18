@@ -6,9 +6,9 @@
 
 ### 适用于 Claude Code CLI 与 Codex 的多供应商代理中间件
 
-**v2.4.0** · Python ≥ 3.12 · FastAPI · OpenAI-Compatible
+**v2.4.0** · Python ≥ 3.14 · FastAPI · OpenAI-Compatible
 
-[![Python](https://img.shields.io/badge/Python-3.12+-blue?logo=python&logoColor=white)](https://www.python.org/)
+[![Python](https://img.shields.io/badge/Python-3.14+-blue?logo=python&logoColor=white)](https://www.python.org/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.136+-green?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
 [![License](https://img.shields.io/badge/License-MIT-yellow)](LICENSE)
 [![Version](https://img.shields.io/badge/Version-2.4.0-orange)]()

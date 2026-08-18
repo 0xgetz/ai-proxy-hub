@@ -125,13 +125,9 @@ def test_root_get_requires_auth_but_root_probes_are_public():
 
 
 def test_presented_token_strips_model_suffix_only_when_configured_has_no_colon():
-    assert (
-        normalize_presented_api_token("secret:claude-sonnet", "secret") == "secret"
-    )
+    assert normalize_presented_api_token("secret:claude-sonnet", "secret") == "secret"
     # Configured tokens that contain ":" must match in full (no strip).
-    assert (
-        normalize_presented_api_token("ab:cd", "ab:cd") == "ab:cd"
-    )
+    assert normalize_presented_api_token("ab:cd", "ab:cd") == "ab:cd"
     assert normalize_presented_api_token("ab:cd:extra", "ab:cd") == "ab:cd:extra"
 
 

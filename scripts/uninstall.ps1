@@ -8,21 +8,21 @@ param(
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
 
-$PackageName = "free-claude-code"
-$FccHomeDirname = ".fcc"
-$FccCommands = @(
-    "fcc-server",
-    "fcc-claude",
-    "fcc-codex",
-    "fcc-init",
-    "free-claude-code"
+$PackageName = "ai-gateway"
+$AigHomeDirname = ".aig"
+$AigCommands = @(
+    "aig-server",
+    "aig-claude",
+    "aig-codex",
+    "aig-init",
+    "ai-gateway"
 )
 
 function Show-Usage {
     @"
 Usage: uninstall.ps1 [options]
 
-Removes the Free Claude Code uv tool and deletes ~/.fcc/.
+Removes the AI Gateway uv tool and deletes ~/.aig/.
 Does not remove uv, Claude Code, Codex, or the uv-managed Python runtime.
 
 Options:
@@ -82,10 +82,10 @@ function Add-UvToPath {
     Add-PathEntry (Join-Path $HOME ".cargo\bin")
 }
 
-function Assert-NoFccProcessesRunning {
+function Assert-NoAigProcessesRunning {
     $running = @()
 
-    foreach ($commandName in $FccCommands) {
+    foreach ($commandName in $AigCommands) {
         $processes = @(Get-Process -Name $commandName -ErrorAction SilentlyContinue)
         if ($processes.Count -gt 0) {
             $running += $commandName
@@ -93,11 +93,11 @@ function Assert-NoFccProcessesRunning {
     }
 
     if ($running.Count -gt 0) {
-        throw "Free Claude Code is still running ($($running -join ', ')). Stop those processes, then rerun uninstall."
+        throw "AI Gateway is still running ($($running -join ', ')). Stop those processes, then rerun uninstall."
     }
 }
 
-function Uninstall-FreeClaudeCode {
+function Uninstall-AiGateway {
     Add-UvToPath
 
     if (-not (Get-Command uv -ErrorAction SilentlyContinue)) {
@@ -116,13 +116,13 @@ function Uninstall-FreeClaudeCode {
                 return
             }
             if (Test-MissingUvToolError -Output $output) {
-                Write-Host "Free Claude Code uv tool not installed or already removed; skipping uv tool uninstall."
+                Write-Host "AI Gateway uv tool not installed or already removed; skipping uv tool uninstall."
                 return
             }
             if (-not [string]::IsNullOrWhiteSpace($output)) {
                 [Console]::Error.WriteLine($output)
             }
-            throw "uv tool uninstall $PackageName failed with exit code $exitCode; aborting before deleting ~/.fcc."
+            throw "uv tool uninstall $PackageName failed with exit code $exitCode; aborting before deleting ~/.aig."
         }
         finally {
             $ErrorActionPreference = $previousErrorActionPreference
@@ -130,24 +130,24 @@ function Uninstall-FreeClaudeCode {
     }
 }
 
-function Purge-FccHome {
-    $fccHome = Join-Path $HOME $FccHomeDirname
-    if (-not (Test-Path -LiteralPath $fccHome)) {
-        Write-Host "No FCC config directory at $fccHome; skipping purge."
+function Purge-AigHome {
+    $aigHome = Join-Path $HOME $AigHomeDirname
+    if (-not (Test-Path -LiteralPath $aigHome)) {
+        Write-Host "No AI Gateway config directory at $aigHome; skipping purge."
         return
     }
 
     $commandText = @(
         "Remove-Item",
         "-LiteralPath",
-        (Format-Argument $fccHome),
+        (Format-Argument $aigHome),
         "-Recurse",
         "-Force"
     ) -join " "
     Write-Host "+ $commandText"
 
     if (-not $DryRun) {
-        Remove-Item -LiteralPath $fccHome -Recurse -Force
+        Remove-Item -LiteralPath $aigHome -Recurse -Force
     }
 }
 
@@ -161,15 +161,15 @@ if ($RemainingArgs.Count -gt 0) {
     throw "Unknown option: $($RemainingArgs -join ' ')"
 }
 
-Write-Step "Checking for running Free Claude Code processes"
-Assert-NoFccProcessesRunning
+Write-Step "Checking for running AI Gateway processes"
+Assert-NoAigProcessesRunning
 
-Write-Step "Removing Free Claude Code uv tool"
-Uninstall-FreeClaudeCode
+Write-Step "Removing AI Gateway uv tool"
+Uninstall-AiGateway
 
-Write-Step "Purging FCC config and data from ~/.fcc"
-Purge-FccHome
+Write-Step "Purging AI Gateway config and data from ~/.aig"
+Purge-AigHome
 
 Write-Host ""
-Write-Host "Free Claude Code has been removed."
+Write-Host "AI Gateway has been removed."
 Write-Host "uv, Claude Code, Codex, and the uv-managed Python runtime were left installed."

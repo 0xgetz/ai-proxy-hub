@@ -1,6 +1,7 @@
 """FastAPI route handlers."""
 
 from fastapi import APIRouter, Depends, HTTPException, Request, Response
+from fastapi.responses import JSONResponse
 from loguru import logger
 
 from config.settings import Settings
@@ -116,6 +117,36 @@ async def health():
 @router.api_route("/health", methods=["HEAD", "OPTIONS"])
 async def probe_health():
     """Respond to compatibility probes for the health endpoint."""
+    return _probe_response("GET, HEAD, OPTIONS")
+
+
+@router.get("/readyz")
+async def readiness(request: Request):
+    """Report whether the gateway can accept traffic for configured providers.
+
+    Unlike the liveness-only ``/health`` endpoint, readiness remains unavailable
+    until the app-scoped provider registry exists and startup model validation did
+    not record a recoverable configuration failure.
+    """
+    checks: list[str] = []
+    registry = getattr(request.app.state, "provider_registry", None)
+    if not isinstance(registry, ProviderRegistry):
+        checks.append("provider_registry_unavailable")
+
+    if getattr(request.app.state, "startup_validation_error", None):
+        checks.append("configured_model_validation_failed")
+
+    if checks:
+        return JSONResponse(
+            status_code=503,
+            content={"status": "not_ready", "checks": checks},
+        )
+    return {"status": "ready"}
+
+
+@router.api_route("/readyz", methods=["HEAD", "OPTIONS"])
+async def probe_readiness():
+    """Respond to compatibility probes for the readiness endpoint."""
     return _probe_response("GET, HEAD, OPTIONS")
 
 

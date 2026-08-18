@@ -1,12 +1,13 @@
 from __future__ import annotations
 
+import os
+import stat
 from pathlib import Path
 from unittest.mock import patch
 
 import httpx
 from fastapi.testclient import TestClient
 
-from api.admin_config import MASKED_SECRET
 from api.admin_urls import local_admin_url
 from api.app import create_app
 from config.settings import Settings
@@ -32,11 +33,27 @@ def _clear_process_config(monkeypatch) -> None:
         "HOST",
         "PORT",
         "LOG_FILE",
+        "MESSAGING_PLATFORM",
+        "VOICE_NOTE_ENABLED",
+        "ENABLE_WEB_SERVER_TOOLS",
         "ZAI_BASE_URL",
         "CLAUDE_WORKSPACE",
         "CLAUDE_CLI_BIN",
     ):
         monkeypatch.delenv(key, raising=False)
+
+
+def test_safe_runtime_defaults(monkeypatch, tmp_path):
+    _set_home(monkeypatch, tmp_path)
+    _clear_process_config(monkeypatch)
+
+    settings = Settings(_env_file=None)
+
+    assert settings.host == "127.0.0.1"
+    assert settings.anthropic_auth_token == ""
+    assert settings.messaging_platform == "none"
+    assert settings.voice_note_enabled is False
+    assert settings.enable_web_server_tools is False
 
 
 def test_admin_page_is_loopback_only(monkeypatch, tmp_path):
@@ -114,7 +131,8 @@ def test_admin_config_masks_secrets_and_exposes_manifest(monkeypatch, tmp_path):
         field for field in body["fields"] if field["key"] == "ANTHROPIC_AUTH_TOKEN"
     )
     assert auth_field["secret"] is True
-    assert auth_field["value"] == MASKED_SECRET
+    assert auth_field["value"] == ""
+    assert auth_field["configured"] is False
     assert auth_field["source"] == "template"
 
 
@@ -177,6 +195,8 @@ def test_admin_apply_writes_complete_managed_env_and_masks_preview(
     assert "MODEL=open_router/test-model" in text
     assert "OPENROUTER_API_KEY=router-secret" in text
     assert "ANTHROPIC_AUTH_TOKEN=" in text
+    if os.name != "nt":
+        assert stat.S_IMODE(env_file.stat().st_mode) == 0o600
     assert body["restart"] == {
         "required": False,
         "automatic": False,
